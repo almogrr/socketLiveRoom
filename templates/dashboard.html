@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h2>Welcome, {{ username }}</h2>
+    <div>
+        <h3>Create Room</h3>
+        <form id="create-form">
+            <input type="text" name="room" required placeholder="Room Name" />
+            <input type="text" name="key" required placeholder="Key" />
+            <button type="submit">Create</button>
+        </form>
+    </div>
+    <div>
+        <h3>Join Room</h3>
+        <form id="join-form">
+            <input type="text" name="room" required placeholder="Room Name" />
+            <input type="text" name="key" required placeholder="Key" />
+            <button type="submit">Join</button>
+        </form>
+    </div>
+    <div>
+        <h3>Your Rooms</h3>
+        <ul id="rooms-list">
+            {% for room in rooms %}
+                <li>
+                    {{ room }} 
+                    <button class="enter-room" data-room="{{ room }}">Enter</button>
+                    <button class="delete-room" data-room="{{ room }}">Delete</button>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    
+    <script>
+        $(function () {
+            $('#create-form').submit(function (event) {
+                event.preventDefault();
+                $.post('/create', $(this).serialize(), function (data) {
+                    if (data.success) {
+                        $('#rooms-list').append('<li>' + data.room + ' <button class="enter-room" data-room="' + data.room + '">Enter</button> <button class="delete-room" data-room="' + data.room + '">Delete</button></li>');
+                    } else {
+                        alert(data.error);
+                    }
+                });
+            });
+
+            $('#join-form').submit(function (event) {
+                event.preventDefault();
+                $.post('/join', $(this).serialize(), function (data) {
+                    if (data.success) {
+                        $('#rooms-list').append('<li>' + data.room + ' <button class="enter-room" data-room="' + data.room + '">Enter</button> <button class="delete-room" data-room="' + data.room + '">Delete</button></li>');
+                    } else {
+                        alert(data.error);
+                    }
+                });
+            });
+
+            $(document).on('click', '.enter-room', function () {
+                var room = $(this).data('room');
+                window.location.href = '/chat/' + room;
+            });
+
+            $(document).on('click', '.delete-room', function () {
+                var room = $(this).data('room');
+                $.post('/delete', { room: room }, function (data) {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert(data.error);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

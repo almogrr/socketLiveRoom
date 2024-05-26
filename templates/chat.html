@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Room</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        #messages {
+            list-style-type: none;
+            padding: 0;
+        }
+        #messages li {
+            padding: 8px;
+            margin-bottom: 5px;
+            background-color: #f4f4f4;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #form {
+            display: flex;
+        }
+        #input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h2>Welcome, {{ username }}. You are in room: {{ room }}</h2>
+    <button id="back-to-dashboard">Go Back to Dashboard</button>
+    <ul id="messages"></ul>
+    <form id="form" action="">
+        <input id="input" autocomplete="off" /><button>Send</button>
+    </form>
+
+    <script>
+        $(function () {
+            var socket = io();
+            socket.emit('join', { room: "{{ room }}" });
+
+            $('form').submit(function() {
+                var message = $('#input').val();
+                socket.send({ msg: message, room: "{{ room }}" });
+                $('#input').val('');
+                return false;
+            });
+
+            socket.on('message', function(msg){
+                $('#messages').append($('<li>').text(msg));
+            });
+
+            $('#back-to-dashboard').click(function() {
+                socket.emit('leave', { room: "{{ room }}" });
+                window.location.href = '/dashboard';
+            });
+
+            $(window).on('beforeunload', function(){
+                socket.emit('leave', { room: "{{ room }}" });
+            });
+        });
+    </script>
+</body>
+</html>
